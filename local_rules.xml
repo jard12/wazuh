@@ -150,3 +150,36 @@
   </rule>
 
 </group>
+<!-- =========================
+     Sysmon Mail Detection (Jard)
+     ========================= -->
+<group name="sysmon,network,mail,">
+
+  <!-- Outgoing SMTP (port 25/465/587) -->
+  <rule id="100620" level="5">
+    <field name="win.system.providerName">Microsoft-Windows-Sysmon</field>
+    <field name="win.system.eventID">3</field>
+    <regex type="pcre2">DestinationPort="(25|465|587)"</regex>
+    <description>Outgoing SMTP connection: $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
+    <group>mail,outgoing,sysmon,</group>
+  </rule>
+
+  <!-- Incoming IMAP/POP3 -->
+  <rule id="100621" level="4">
+    <field name="win.system.providerName">Microsoft-Windows-Sysmon</field>
+    <field name="win.system.eventID">3</field>
+    <regex type="pcre2">DestinationPort="(993|995|143|110)"</regex>
+    <description>Mail client connection (IMAP/POP3): $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
+    <group>mail,incoming,sysmon,</group>
+  </rule>
+
+  <!-- Mail attachment creation -->
+  <rule id="100622" level="5">
+    <field name="win.system.providerName">Microsoft-Windows-Sysmon</field>
+    <field name="win.system.eventID">11</field>
+    <regex type="pcre2">\\(Downloads|Attachments|AppData\\Local\\Temp)\\.*\.(eml|msg|pdf|docx|zip)</regex>
+    <description>Mail-related file created: $(win.eventdata.TargetFilename) by $(win.eventdata.Image)</description>
+    <group>mail,attachment,sysmon,</group>
+  </rule>
+
+</group>
