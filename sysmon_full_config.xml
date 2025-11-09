@@ -1,5 +1,6 @@
 <Sysmon schemaversion="4.90">
   <HashAlgorithms>sha256,md5</HashAlgorithms>
+
   <EventFiltering>
 
     <!-- === PROCESS CREATION === -->
@@ -14,6 +15,9 @@
       <Image condition="end with">firefox.exe</Image>
       <Image condition="end with">curl.exe</Image>
       <Image condition="end with">wget.exe</Image>
+      <Image condition="end with">powershell.exe</Image>
+      <Image condition="end with">pwsh.exe</Image>
+      <Image condition="end with">cmd.exe</Image>
     </NetworkConnect>
 
     <!-- === DNS === -->
@@ -21,49 +25,43 @@
       <QueryName condition="is">*</QueryName>
     </DnsQuery>
 
-    <!-- === FILE CREATION === -->
+    <!-- === FILE CREATE (geen extensie-uitsluiting; focus op user & app paths) === -->
     <FileCreate onmatch="include">
       <TargetFilename condition="contains">\\Users\\</TargetFilename>
-      <TargetFilename condition="contains">\\Downloads\\</TargetFilename>
-      <TargetFilename condition="contains">\\Desktop\\</TargetFilename>
-      <TargetFilename condition="contains">\\Documents\\</TargetFilename>
-      <TargetFilename condition="contains">\\AppData\\Local\\Temp\\</TargetFilename>
       <TargetFilename condition="contains">\\Program Files\\</TargetFilename>
       <TargetFilename condition="contains">\\Program Files (x86)\\</TargetFilename>
-      <TargetFilename condition="end with">.exe</TargetFilename>
-      <TargetFilename condition="end with">.zip</TargetFilename>
-      <TargetFilename condition="end with">.msi</TargetFilename>
-      <TargetFilename condition="end with">.jpg</TargetFilename>
-      <TargetFilename condition="end with">.png</TargetFilename>
-      <TargetFilename condition="end with">.webp</TargetFilename>
-      <TargetFilename condition="end with">.pdf</TargetFilename>
-      <TargetFilename condition="end with">.ps1</TargetFilename>
-      <TargetFilename condition="end with">.bat</TargetFilename>
-      <TargetFilename condition="end with">.vbs</TargetFilename>
+      <TargetFilename condition="contains">\\AppData\\Local\\Temp\\</TargetFilename>
+      <!-- laat alle extensies door in bovenstaande paden -->
     </FileCreate>
 
     <!-- === FILE DELETE === -->
     <FileDelete onmatch="include">
       <TargetFilename condition="contains">\\Users\\</TargetFilename>
+      <TargetFilename condition="contains">\\Program Files\\</TargetFilename>
+      <TargetFilename condition="contains">\\Program Files (x86)\\</TargetFilename>
     </FileDelete>
 
-    <!-- === FILE WRITE TIME === -->
+    <!-- === FILE WRITE TIME (optioneel) === -->
     <FileCreateTime onmatch="include">
       <TargetFilename condition="contains">\\Users\\</TargetFilename>
     </FileCreateTime>
 
-    <!-- === FILE STREAM HASH === -->
+    <!-- === FILE STREAM HASH (hashes op user-paden) === -->
     <FileCreateStreamHash onmatch="include">
       <TargetFilename condition="contains">\\Users\\</TargetFilename>
+      <TargetFilename condition="contains">\\Program Files\\</TargetFilename>
+      <TargetFilename condition="contains">\\Program Files (x86)\\</TargetFilename>
     </FileCreateStreamHash>
 
     <!-- === EXCLUDES (Windows noise) === -->
     <FileCreate onmatch="exclude">
       <TargetFilename condition="begin with">C:\Windows\</TargetFilename>
+      <TargetFilename condition="contains">\WinSxS\</TargetFilename>
       <TargetFilename condition="begin with">C:\ProgramData\Microsoft\Windows Defender\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Microsoft\Windows\INetCache\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Temp\</TargetFilename>
-      <TargetFilename condition="contains">\WinSxS\</TargetFilename>
+      <TargetFilename condition="begin with">C:\$Recycle.Bin\S-1-5-18\</TargetFilename>
+      <TargetFilename condition="end with">\.etl</TargetFilename>
     </FileCreate>
 
   </EventFiltering>
