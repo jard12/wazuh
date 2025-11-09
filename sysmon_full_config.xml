@@ -1,38 +1,49 @@
 <Sysmon schemaversion="4.90">
-
   <HashAlgorithms>sha256,md5</HashAlgorithms>
-
   <EventFiltering>
 
-    <!-- ==================== PROCESS CREATION (ID 1) ==================== -->
+    <!-- ================= PROCESS CREATION ================= -->
     <ProcessCreate onmatch="include">
+      <!-- log alles; filter later in Wazuh rules -->
       <CommandLine condition="is">*</CommandLine>
     </ProcessCreate>
 
-    <!-- ==================== NETWORK CONNECT (ID 3) ===================== -->
+    <!-- ================= NETWORK CONNECTIONS ================= -->
     <NetworkConnect onmatch="include">
+      <!-- Log veelgebruikte browsers & cli tools -->
       <Image condition="end with">chrome.exe</Image>
       <Image condition="end with">msedge.exe</Image>
       <Image condition="end with">firefox.exe</Image>
       <Image condition="end with">curl.exe</Image>
       <Image condition="end with">wget.exe</Image>
       <Image condition="end with">powershell.exe</Image>
+      <Image condition="end with">pwsh.exe</Image>
     </NetworkConnect>
 
-    <!-- ==================== DNS QUERY (ID 22) =========================== -->
+    <!-- ================= DNS QUERIES ================= -->
     <DnsQuery onmatch="include">
       <QueryName condition="is">*</QueryName>
     </DnsQuery>
 
-    <!-- ==================== FILE CREATE (ID 11) ========================= -->
+    <!-- ================= FILE: CREATION / STREAM HASH / DELETE ================= -->
+
+    <!-- File created (11) -->
     <FileCreate onmatch="include">
+      <!-- Gebruiker directories -->
       <TargetFilename condition="contains">\Users\</TargetFilename>
       <TargetFilename condition="contains">\Downloads\</TargetFilename>
       <TargetFilename condition="contains">\Desktop\</TargetFilename>
       <TargetFilename condition="contains">\Documents\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Temp\</TargetFilename>
+
+      <!-- Program directories -->
       <TargetFilename condition="contains">\Program Files\</TargetFilename>
       <TargetFilename condition="contains">\Program Files (x86)\</TargetFilename>
+
+      <!-- Recycle bin moves -->
+      <TargetFilename condition="contains">\$Recycle.Bin\</TargetFilename>
+
+      <!-- Interessante extensies -->
       <TargetFilename condition="end with">.exe</TargetFilename>
       <TargetFilename condition="end with">.msi</TargetFilename>
       <TargetFilename condition="end with">.zip</TargetFilename>
@@ -40,73 +51,64 @@
       <TargetFilename condition="end with">.jpg</TargetFilename>
       <TargetFilename condition="end with">.png</TargetFilename>
       <TargetFilename condition="end with">.webp</TargetFilename>
+      <TargetFilename condition="end with">.txt</TargetFilename>
       <TargetFilename condition="end with">.ps1</TargetFilename>
       <TargetFilename condition="end with">.bat</TargetFilename>
       <TargetFilename condition="end with">.vbs</TargetFilename>
-      <TargetFilename condition="end with">.txt</TargetFilename>
     </FileCreate>
 
-    <!-- ==================== FILE DELETE (ID 23) ======================== -->
+    <!-- File create noise exclusion (cache / OS / known files) -->
+    <FileCreate onmatch="exclude">
+      <TargetFilename condition="begin with">C:\Windows\</TargetFilename>
+      <TargetFilename condition="begin with">C:\ProgramData\Microsoft\Windows Defender\</TargetFilename>
+      <TargetFilename condition="contains">\WinSxS\</TargetFilename>
+
+      <!-- Browser cache noise exclusions -->
+      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Cache\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Code Cache\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\GPUCache\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\Cache\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\Code Cache\</TargetFilename>
+
+      <!-- Wazuh / agent internals negeren -->
+      <TargetFilename condition="begin with">C:\Program Files (x86)\ossec-agent\</TargetFilename>
+      <TargetFilename condition="end with">wazuh-agent.state</TargetFilename>
+
+      <!-- Recycle bin SYSTEM entries (leegmaak) -->
+      <TargetFilename condition="begin with">C:\$Recycle.Bin\S-1-5-18\</TargetFilename>
+    </FileCreate>
+
+    <!-- FileDelete (23) -->
     <FileDelete onmatch="include">
       <TargetFilename condition="contains">\Users\</TargetFilename>
     </FileDelete>
 
-    <!-- ==================== FILE DELETE DETECTED (ID 26) =============== -->
+    <!-- FileDeleteDetected (26) -->
     <FileDeleteDetected onmatch="include">
       <TargetFilename condition="contains">\Users\</TargetFilename>
     </FileDeleteDetected>
 
-    <!-- ==================== FILE CREATE TIME (ID 2) ==================== -->
+    <!-- FileCreateTime (2) -->
     <FileCreateTime onmatch="include">
       <TargetFilename condition="contains">\Users\</TargetFilename>
     </FileCreateTime>
 
-    <!-- ==================== FILE STREAM HASH (ID 15) =================== -->
+    <!-- FileCreateStreamHash (15) -->
     <FileCreateStreamHash onmatch="include">
       <TargetFilename condition="contains">\Users\</TargetFilename>
     </FileCreateStreamHash>
 
-    <!-- ==================== REGISTRY UNINSTALL ======================== -->
+    <!-- ================= REGISTRY / SCRIPTS ================= -->
     <RegistryEvent onmatch="include">
       <TargetObject condition="contains">\Uninstall\</TargetObject>
     </RegistryEvent>
 
-    <!-- ==================== UITSLEUTELEN VAN RUIS ===================== -->
-    <FileCreate onmatch="exclude">
-
-      <!-- OS ruis -->
-      <TargetFilename condition="begin with">C:\Windows\</TargetFilename>
-      <TargetFilename condition="contains">\WinSxS\</TargetFilename>
-      <TargetFilename condition="begin with">C:\ProgramData\Microsoft\Windows Defender\</TargetFilename>
-      <TargetFilename condition="end with">.etl</TargetFilename>
-
-      <!-- Microsoft Edge / Chrome caches -->
-      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Cache\</TargetFilename>
-      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Code Cache\</TargetFilename>
-      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\GPUCache\</TargetFilename>
-      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Service Worker\CacheStorage\</TargetFilename>
-      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Network\</TargetFilename>
-      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Local Storage\</TargetFilename>
-      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Local State</TargetFilename>
-      <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\Cache\</TargetFilename>
-      <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\Code Cache\</TargetFilename>
-      <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\GPUCache\</TargetFilename>
-      <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\Service Worker\CacheStorage\</TargetFilename>
-      <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\Network\</TargetFilename>
-      <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Local State</TargetFilename>
-
-      <!-- Wazuh zelf -->
-      <TargetFilename condition="begin with">C:\Program Files (x86)\ossec-agent\</TargetFilename>
-      <TargetFilename condition="begin with">C:\Program Files\ossec-agent\</TargetFilename>
-      <TargetFilename condition="end with">wazuh-agent.state</TargetFilename>
-
-      <!-- Recycle Bin system user -->
-      <TargetFilename condition="begin with">C:\$Recycle.Bin\S-1-5-18\</TargetFilename>
-
-      <!-- Temp noise -->
-      <TargetFilename condition="contains">\AppData\Local\Temp\scoped_dir</TargetFilename>
-      <TargetFilename condition="contains">\AppData\Local\Temp\Temp</TargetFilename>
+    <FileCreate onmatch="include">
+      <TargetFilename condition="end with">.ps1</TargetFilename>
+      <TargetFilename condition="end with">.vbs</TargetFilename>
+      <TargetFilename condition="end with">.bat</TargetFilename>
     </FileCreate>
 
+    <!-- Log Sysmon config changes (ID 16) and driver events are automatic -->
   </EventFiltering>
 </Sysmon>
