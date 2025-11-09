@@ -15,6 +15,10 @@
       <Image condition="end with">firefox.exe</Image>
       <Image condition="end with">curl.exe</Image>
       <Image condition="end with">wget.exe</Image>
+      <Image condition="end with">powershell.exe</Image>
+      <Image condition="end with">pwsh.exe</Image>
+      <Image condition="end with">outlook.exe</Image>
+      <Image condition="end with">thunderbird.exe</Image>
     </NetworkConnect>
 
     <!-- ========= DNS ========= -->
