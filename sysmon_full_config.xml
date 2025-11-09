@@ -1,18 +1,15 @@
 <Sysmon schemaversion="4.90">
 
-  <!-- ====================== ALGEMENE INSTELLINGEN ====================== -->
   <HashAlgorithms>sha256,md5</HashAlgorithms>
 
   <EventFiltering>
 
     <!-- ==================== PROCESS CREATION (ID 1) ==================== -->
-    <!-- Toon alle process starts inclusief commandline -->
     <ProcessCreate onmatch="include">
       <CommandLine condition="is">*</CommandLine>
     </ProcessCreate>
 
     <!-- ==================== NETWORK CONNECT (ID 3) ===================== -->
-    <!-- Alleen browsers en netwerktools -->
     <NetworkConnect onmatch="include">
       <Image condition="end with">chrome.exe</Image>
       <Image condition="end with">msedge.exe</Image>
@@ -28,7 +25,6 @@
     </DnsQuery>
 
     <!-- ==================== FILE CREATE (ID 11) ========================= -->
-    <!-- Focus op gebruikerspaden, temp, en installatiepaden -->
     <FileCreate onmatch="include">
       <TargetFilename condition="contains">\Users\</TargetFilename>
       <TargetFilename condition="contains">\Downloads\</TargetFilename>
@@ -78,38 +74,36 @@
     <!-- ==================== UITSLEUTELEN VAN RUIS ===================== -->
     <FileCreate onmatch="exclude">
 
-      <!-- OS-ruis -->
+      <!-- OS ruis -->
       <TargetFilename condition="begin with">C:\Windows\</TargetFilename>
       <TargetFilename condition="contains">\WinSxS\</TargetFilename>
       <TargetFilename condition="begin with">C:\ProgramData\Microsoft\Windows Defender\</TargetFilename>
       <TargetFilename condition="end with">.etl</TargetFilename>
 
-      <!-- Microsoft Edge caches -->
+      <!-- Microsoft Edge / Chrome caches -->
       <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Cache\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Code Cache\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\GPUCache\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Service Worker\CacheStorage\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Network\</TargetFilename>
-      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Crashpad\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Local Storage\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Local State</TargetFilename>
-
-      <!-- Chrome caches -->
       <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\Cache\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\Code Cache\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\GPUCache\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\Service Worker\CacheStorage\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\Network\</TargetFilename>
-      <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Crashpad\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Local State</TargetFilename>
 
-      <!-- Wazuh Agent zelf -->
+      <!-- Wazuh zelf -->
       <TargetFilename condition="begin with">C:\Program Files (x86)\ossec-agent\</TargetFilename>
       <TargetFilename condition="begin with">C:\Program Files\ossec-agent\</TargetFilename>
+      <TargetFilename condition="end with">wazuh-agent.state</TargetFilename>
 
       <!-- Recycle Bin system user -->
       <TargetFilename condition="begin with">C:\$Recycle.Bin\S-1-5-18\</TargetFilename>
 
-      <!-- Temp noise van browsers en Windows -->
+      <!-- Temp noise -->
       <TargetFilename condition="contains">\AppData\Local\Temp\scoped_dir</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Temp\Temp</TargetFilename>
     </FileCreate>
