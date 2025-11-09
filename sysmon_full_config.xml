@@ -1,36 +1,32 @@
 <Sysmon schemaversion="4.90">
-  <!-- Globale hash -->
   <HashAlgorithms>sha256</HashAlgorithms>
-
   <EventFiltering>
 
-    <!-- ===================== DNS ===================== -->
+    <!-- DNS -->
     <DnsQuery onmatch="include">
       <QueryName condition="is">*</QueryName>
     </DnsQuery>
 
-    <!-- ============ NetworkConnect (user apps) ============ -->
+    <!-- NetworkConnect: user tools/browsers, geen svchost/OS -->
     <NetworkConnect onmatch="include">
-      <!-- exclude kern/OS-processen om ruis te beperken -->
       <Image condition="is not">C:\Windows\System32\svchost.exe</Image>
       <Image condition="is not">C:\Windows\System32\services.exe</Image>
       <Image condition="is not">C:\Windows\System32\lsass.exe</Image>
       <Image condition="is not">C:\Windows\System32\wininit.exe</Image>
 
-      <!-- browsers, tools, CLI-downloaders -->
       <Image condition="end with">chrome.exe</Image>
       <Image condition="end with">msedge.exe</Image>
       <Image condition="end with">firefox.exe</Image>
       <Image condition="end with">explorer.exe</Image>
-      <Image condition="end with">nslookup.exe</Image>
-      <Image condition="end with">curl.exe</Image>
-      <Image condition="end with">wget.exe</Image>
+      <Image condition="end with">cmd.exe</Image>
       <Image condition="end with">powershell.exe</Image>
       <Image condition="end with">pwsh.exe</Image>
+      <Image condition="end with">curl.exe</Image>
+      <Image condition="end with">wget.exe</Image>
       <Image condition="end with">bitsadmin.exe</Image>
     </NetworkConnect>
 
-    <!-- ============ ProcessCreate (relevant + cmdline) ============ -->
+    <!-- ProcessCreate (met commandline) -->
     <ProcessCreate onmatch="include">
       <CommandLine condition="is">*</CommandLine>
       <Image condition="end with">cmd.exe</Image>
@@ -45,40 +41,35 @@
       <Image condition="end with">winget.exe</Image>
     </ProcessCreate>
 
-    <!-- ============ FileCreate (ALLES, met OS-ruis uitgezonderd) ============ -->
+    <!-- FileCreate: ALLES (met pragmatische excludes om OS-ruis te beperken) -->
     <FileCreate onmatch="include">
       <TargetFilename condition="is">*</TargetFilename>
     </FileCreate>
-
-    <!-- Uitsluitingen voor FileCreate (minder ruis/OS) -->
     <FileCreate onmatch="exclude">
       <TargetFilename condition="begin with">C:\Windows\</TargetFilename>
-      <TargetFilename condition="begin with">C:\ProgramData\Microsoft\Windows Defender\</TargetFilename>
       <TargetFilename condition="begin with">C:\Windows\WinSxS\</TargetFilename>
       <TargetFilename condition="begin with">C:\Windows\SoftwareDistribution\</TargetFilename>
       <TargetFilename condition="begin with">C:\ProgramData\Microsoft\Windows\DeliveryOptimization\</TargetFilename>
+      <TargetFilename condition="begin with">C:\ProgramData\Microsoft\Windows Defender\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Temp\</TargetFilename>
       <TargetFilename condition="begin with">C:\$Recycle.Bin\S-1-5-18\</TargetFilename>
-      <TargetFilename condition="begin with">C:\Windows\servicing\</TargetFilename>
       <TargetFilename condition="end with">\.etl</TargetFilename>
     </FileCreate>
 
-    <!-- ============ Hash van nieuwe files (stream hash) ============ -->
+    <!-- Hash van nieuwe files -->
     <FileCreateStreamHash onmatch="include">
       <TargetFilename condition="is">*</TargetFilename>
     </FileCreateStreamHash>
-    <!-- Exclude dezelfde OS-paden voor stream-hash -->
     <FileCreateStreamHash onmatch="exclude">
       <TargetFilename condition="begin with">C:\Windows\</TargetFilename>
-      <TargetFilename condition="begin with">C:\ProgramData\Microsoft\Windows Defender\</TargetFilename>
       <TargetFilename condition="begin with">C:\Windows\WinSxS\</TargetFilename>
       <TargetFilename condition="begin with">C:\Windows\SoftwareDistribution\</TargetFilename>
       <TargetFilename condition="begin with">C:\ProgramData\Microsoft\Windows\DeliveryOptimization\</TargetFilename>
+      <TargetFilename condition="begin with">C:\ProgramData\Microsoft\Windows Defender\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Temp\</TargetFilename>
-      <TargetFilename condition="begin with">C:\$Recycle.Bin\S-1-5-18\</TargetFilename>
     </FileCreateStreamHash>
 
-    <!-- ============ FileDelete (verwijderen) ============ -->
+    <!-- Delete + Permanent delete -->
     <FileDelete onmatch="include">
       <TargetFilename condition="is">*</TargetFilename>
     </FileDelete>
@@ -88,23 +79,14 @@
       <TargetFilename condition="begin with">C:\Windows\SoftwareDistribution\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Temp\</TargetFilename>
     </FileDelete>
-
-    <!-- ============ FileDeleteDetected (permanent/archived) ============ -->
     <FileDeleteDetected onmatch="include">
       <TargetFilename condition="is">*</TargetFilename>
     </FileDeleteDetected>
 
-    <!-- ============ Registry (install/uninstall) ============ -->
+    <!-- Install/Uninstall -->
     <RegistryEvent onmatch="include">
       <TargetObject condition="contains">\Uninstall\</TargetObject>
     </RegistryEvent>
-
-    <!-- (Optioneel) GEEN ImageLoad-log voor .dll om ruis te vermijden -->
-    <!--
-    <ImageLoad onmatch="include">
-      <ImageLoaded condition="end with">.dll</ImageLoaded>
-    </ImageLoad>
-    -->
 
   </EventFiltering>
 </Sysmon>
