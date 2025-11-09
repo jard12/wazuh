@@ -1,36 +1,23 @@
-<!-- Local rules -->
-
-<!-- Modify it at your will. -->
-<!-- Copyright (C) 2015, Wazuh Inc. -->
-
-<!-- Example -->
-<group name="local,syslog,sshd,">
-  <!-- Dec 10 01:02:02 host sshd[12341]: Failed none for root from 1.1.1.1 port 1066 ssh2 -->
-  <rule id="100001" level="5">
-    <if_sid>57516</if_sid>
-    <srcip>1.1.1.1</srcip>
-    <description>sshd: authentication failed from IP 1.1.1.1.</description>
-    <group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,</group>
-  </rule>
-</group>
-
 <!-- =========================
-     SYSmon: File events
+     local_rules.xml  (Jard)
      ========================= -->
+
+<!-- ========== SYSmon: File events (create / stream hash / delete) ========== -->
 <group name="windows,sysmon,files,">
+
   <!-- FileCreate (ID 11) -->
   <rule id="100230" level="6">
     <field name="win.system.providerName">Microsoft-Windows-Sysmon</field>
     <field name="win.system.eventID">11</field>
-    <description>File created: $(win.eventdata.TargetFilename) by $(win.eventdata.Image)</description>
+    <description>File created: $(win.eventdata.TargetFilename) by $(win.eventdata.Image) (user $(win.eventdata.User))</description>
     <group>file,create,sysmon,</group>
   </rule>
 
-  <!-- Hoge nadruk voor Downloads + Program Files -->
+  <!-- Extra nadruk op Downloads & Program Files -->
   <rule id="100231" level="8">
     <if_sid>100230</if_sid>
     <regex type="pcre2">\\\\Users\\\\.*\\\\Downloads\\\\|^C:\\\\Program Files( \\(x86\\))?\\\\</regex>
-    <description>Download/Program Files create: $(win.eventdata.TargetFilename) by $(win.eventdata.Image)</description>
+    <description>Download/Install create: $(win.eventdata.TargetFilename) by $(win.eventdata.Image)</description>
     <group>download,install,sysmon,</group>
   </rule>
 
@@ -57,13 +44,13 @@
     <description>Permanently deleted: $(win.eventdata.TargetFilename) by $(win.eventdata.Image)</description>
     <group>file,delete,permanent,sysmon,</group>
   </rule>
+
 </group>
 
-<!-- =========================
-     SYSmon: DNS / Netwerk / Process
-     ========================= -->
+<!-- =============== SYSmon: Process & Network & DNS ================= -->
 <group name="sysmon,windows,">
-  <!-- Sysmon DNS Query (ID 22) -->
+
+  <!-- DNS Query (ID 22) -->
   <rule id="100510" level="4">
     <field name="win.system.providerName">Microsoft-Windows-Sysmon</field>
     <field name="win.system.eventID">22</field>
@@ -79,7 +66,7 @@
     <group>network,sysmon,</group>
   </rule>
 
-  <!-- Correlatie DNS + NetConnect binnen 60s -->
+  <!-- Correlatie: DNS + NetConnect binnen 60 sec (zelfde agent) -->
   <rule id="100512" level="7" frequency="2" timeframe="60">
     <if_matched_sid>100510</if_matched_sid>
     <if_matched_sid>100511</if_matched_sid>
@@ -88,19 +75,9 @@
     <group>correlation,web,sysmon,</group>
   </rule>
 
-  <!-- ProcessCreate (ID 1) – installers & shells -->
-  <rule id="100520" level="5">
-    <field name="win.system.providerName">Microsoft-Windows-Sysmon</field>
-    <field name="win.system.eventID">1</field>
-    <regex type="pcre2">(msiexec\.exe|setup\.exe|install\.exe|powershell\.exe|pwsh\.exe|cmd\.exe)</regex>
-    <description>Process start: $(win.eventdata.Image) cmdline="$(win.eventdata.CommandLine)"</description>
-    <group>process,create,sysmon,install,</group>
-  </rule>
 </group>
 
-<!-- =========================
-     Windows DNS-Client (native)
-     ========================= -->
+<!-- =============== Windows DNS-Client (native kanaal) ================= -->
 <group name="dns,windows,">
   <rule id="100540" level="4">
     <field name="win.system.providerName">Microsoft-Windows-DNS-Client</field>
@@ -110,30 +87,7 @@
   </rule>
 </group>
 
-<!-- =========================
-     Syscollector: install/uninstall
-     ========================= -->
-<group name="syscollector,software,">
-  <rule id="100220" level="5">
-    <if_group>syscollector</if_group>
-    <field name="data.type">dbsync_programs</field>
-    <field name="data.operation">INSERT</field>
-    <description>Software installed: $(data.program.name)</description>
-    <group>software,install,</group>
-  </rule>
-
-  <rule id="100221" level="5">
-    <if_group>syscollector</if_group>
-    <field name="data.type">dbsync_programs</field>
-    <field name="data.operation">DELETE</field>
-    <description>Software uninstalled: $(data.program.name)</description>
-    <group>software,uninstall,</group>
-  </rule>
-</group>
-
-<!-- =========================
-     PowerShell noise filter
-     ========================= -->
+<!-- =============== PowerShell ruisfilter (optioneel) ================== -->
 <group name="windows,powershell,global,">
   <rule id="199959" level="0">
     <if_group>eventchannel</if_group>
