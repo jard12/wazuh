@@ -15,10 +15,21 @@
       <Image condition="end with">firefox.exe</Image>
       <Image condition="end with">curl.exe</Image>
       <Image condition="end with">wget.exe</Image>
+
+  <!-- Mail & test tools -->
       <Image condition="end with">powershell.exe</Image>
       <Image condition="end with">pwsh.exe</Image>
       <Image condition="end with">outlook.exe</Image>
       <Image condition="end with">thunderbird.exe</Image>
+
+  <!-- optioneel: poorten om noise te beperken -->
+      <DestinationPort condition="is">25</DestinationPort>
+      <DestinationPort condition="is">465</DestinationPort>
+      <DestinationPort condition="is">587</DestinationPort>
+      <DestinationPort condition="is">993</DestinationPort>
+      <DestinationPort condition="is">995</DestinationPort>
+      <DestinationPort condition="is">143</DestinationPort>
+      <DestinationPort condition="is">110</DestinationPort>
     </NetworkConnect>
 
     <!-- ========= DNS ========= -->
