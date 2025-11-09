@@ -1,47 +1,42 @@
 <Sysmon schemaversion="4.90">
 
-  <!-- Hashes die we willen zien -->
+  <!-- ====================== ALGEMENE INSTELLINGEN ====================== -->
   <HashAlgorithms>sha256,md5</HashAlgorithms>
 
   <EventFiltering>
 
     <!-- ==================== PROCESS CREATION (ID 1) ==================== -->
-    <!-- Toon alle process starts inclusief commandline (handig bij installers/scripts) -->
+    <!-- Toon alle process starts inclusief commandline -->
     <ProcessCreate onmatch="include">
       <CommandLine condition="is">*</CommandLine>
     </ProcessCreate>
 
     <!-- ==================== NETWORK CONNECT (ID 3) ===================== -->
-    <!-- Alleen user-tools/browsers om webbezoek zichtbaar te maken -->
+    <!-- Alleen browsers en netwerktools -->
     <NetworkConnect onmatch="include">
       <Image condition="end with">chrome.exe</Image>
       <Image condition="end with">msedge.exe</Image>
       <Image condition="end with">firefox.exe</Image>
       <Image condition="end with">curl.exe</Image>
       <Image condition="end with">wget.exe</Image>
+      <Image condition="end with">powershell.exe</Image>
     </NetworkConnect>
 
     <!-- ==================== DNS QUERY (ID 22) =========================== -->
-    <!-- Alles, zodat de correlatie met network connect kan -->
     <DnsQuery onmatch="include">
       <QueryName condition="is">*</QueryName>
     </DnsQuery>
 
     <!-- ==================== FILE CREATE (ID 11) ========================= -->
-    <!-- Focus op gebruikerspaden, temp en installpaths + gangbare extensies -->
+    <!-- Focus op gebruikerspaden, temp, en installatiepaden -->
     <FileCreate onmatch="include">
-      <!-- Gebruikerspaden -->
       <TargetFilename condition="contains">\Users\</TargetFilename>
       <TargetFilename condition="contains">\Downloads\</TargetFilename>
       <TargetFilename condition="contains">\Desktop\</TargetFilename>
       <TargetFilename condition="contains">\Documents\</TargetFilename>
       <TargetFilename condition="contains">\AppData\Local\Temp\</TargetFilename>
-
-      <!-- Installatiepaden -->
       <TargetFilename condition="contains">\Program Files\</TargetFilename>
       <TargetFilename condition="contains">\Program Files (x86)\</TargetFilename>
-
-      <!-- Bestanden die vaak gedownload/geïnstalleerd worden -->
       <TargetFilename condition="end with">.exe</TargetFilename>
       <TargetFilename condition="end with">.msi</TargetFilename>
       <TargetFilename condition="end with">.zip</TargetFilename>
@@ -52,53 +47,71 @@
       <TargetFilename condition="end with">.ps1</TargetFilename>
       <TargetFilename condition="end with">.bat</TargetFilename>
       <TargetFilename condition="end with">.vbs</TargetFilename>
+      <TargetFilename condition="end with">.txt</TargetFilename>
     </FileCreate>
 
     <!-- ==================== FILE DELETE (ID 23) ======================== -->
-    <!-- Verwijderingen in user-profielen -->
     <FileDelete onmatch="include">
       <TargetFilename condition="contains">\Users\</TargetFilename>
     </FileDelete>
 
-    <!-- =========== FILE DELETE DETECTED (ID 26) – prullenbak/definitief ========= -->
+    <!-- ==================== FILE DELETE DETECTED (ID 26) =============== -->
     <FileDeleteDetected onmatch="include">
       <TargetFilename condition="contains">\Users\</TargetFilename>
     </FileDeleteDetected>
 
-    <!-- ============ FILE CREATE TIME CHANGE (ID 2) ===================== -->
+    <!-- ==================== FILE CREATE TIME (ID 2) ==================== -->
     <FileCreateTime onmatch="include">
       <TargetFilename condition="contains">\Users\</TargetFilename>
     </FileCreateTime>
 
-    <!-- ============ FILE CREATE STREAM HASH (ID 15) ==================== -->
+    <!-- ==================== FILE STREAM HASH (ID 15) =================== -->
     <FileCreateStreamHash onmatch="include">
       <TargetFilename condition="contains">\Users\</TargetFilename>
     </FileCreateStreamHash>
 
-    <!-- ==================== REGISTRY UNINSTALL ========================= -->
+    <!-- ==================== REGISTRY UNINSTALL ======================== -->
     <RegistryEvent onmatch="include">
       <TargetObject condition="contains">\Uninstall\</TargetObject>
     </RegistryEvent>
 
-    <!-- ==================== GERICHTE EXCLUDES (ruis eruit) ==================== -->
-    <!-- Let op: dit blok hoort NA de include-blokken -->
+    <!-- ==================== UITSLEUTELEN VAN RUIS ===================== -->
     <FileCreate onmatch="exclude">
+
       <!-- OS-ruis -->
       <TargetFilename condition="begin with">C:\Windows\</TargetFilename>
       <TargetFilename condition="contains">\WinSxS\</TargetFilename>
       <TargetFilename condition="begin with">C:\ProgramData\Microsoft\Windows Defender\</TargetFilename>
       <TargetFilename condition="end with">.etl</TargetFilename>
 
-      <!-- Browser caches (Edge) -->
-      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Code Cache\</TargetFilename>
+      <!-- Microsoft Edge caches -->
       <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Cache\</TargetFilename>
-      <TargetFilename condition="contains">\AppData\Local\Microsoft\Windows\INetCache\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Code Cache\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\GPUCache\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Service Worker\CacheStorage\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Default\Network\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Crashpad\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Microsoft\Edge\User Data\Local State</TargetFilename>
 
-      <!-- Wazuh agent self-state -->
+      <!-- Chrome caches -->
+      <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\Cache\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\Code Cache\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\GPUCache\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\Service Worker\CacheStorage\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Default\Network\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Crashpad\</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Google\Chrome\User Data\Local State</TargetFilename>
+
+      <!-- Wazuh Agent zelf -->
       <TargetFilename condition="begin with">C:\Program Files (x86)\ossec-agent\</TargetFilename>
+      <TargetFilename condition="begin with">C:\Program Files\ossec-agent\</TargetFilename>
 
-      <!-- System account prullenbak -->
+      <!-- Recycle Bin system user -->
       <TargetFilename condition="begin with">C:\$Recycle.Bin\S-1-5-18\</TargetFilename>
+
+      <!-- Temp noise van browsers en Windows -->
+      <TargetFilename condition="contains">\AppData\Local\Temp\scoped_dir</TargetFilename>
+      <TargetFilename condition="contains">\AppData\Local\Temp\Temp</TargetFilename>
     </FileCreate>
 
   </EventFiltering>
