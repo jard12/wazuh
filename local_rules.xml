@@ -227,4 +227,6 @@
     <if_matched_sid>100540</if_matched_sid>
     <if_matched_sid>100603</if_matched_sid>
     <same_field>agent.id</same_field>
-    <description>Mail domain lookup (Windows DNS) + SMTP 587</
+    <description>Mail domain lookup (Windows DNS) + SMTP 587</description>
+  </rule>
+</group>
