@@ -130,8 +130,17 @@
     <description>Outgoing SMTP: $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
     <group>mail,outgoing,sysmon,</group>
   </rule>
-  <rule id="100621" level="5"><if_sid>100620</if_sid><field name="win.eventdata.DestinationPort">465</field></rule>
-  <rule id="100622" level="5"><if_sid>100620</if_sid><field name="win.eventdata.DestinationPort">587</field></rule>
+  <rule id="100621" level="5">
+    <if_sid>100620</if_sid>
+    <field name="win.eventdata.DestinationPort">465</field>
+    <description>Outgoing SMTP (SSL): $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
+  </rule>
+
+  <rule id="100622" level="5">
+    <if_sid>100620</if_sid>
+    <field name="win.eventdata.DestinationPort">587</field>
+    <description>Outgoing SMTP (TLS): $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
+  </rule>
 
   <!-- IMAP/POP3 -->
   <rule id="100623" level="4">
