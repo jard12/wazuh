@@ -87,10 +87,10 @@
   </rule>
 </group>
 
-<!-- =============== PowerShell ruisfilter (optioneel) ================== -->
 <group name="windows,powershell,global,">
   <rule id="199959" level="0">
-    <if_group>eventchannel</if_group>
+    <field name="win.system.providerName">Microsoft-Windows-PowerShell</field>
+    <field name="win.system.channel">Microsoft-Windows-PowerShell/Operational</field>
     <regex type="pcre2">(Set-StrictMode|Out-Default|PSConsoleHostReadLine|TabExpansion2|prompt|Get-FormatData)</regex>
     <description>Noise filter: benign PowerShell host lines</description>
   </rule>
