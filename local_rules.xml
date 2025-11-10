@@ -161,11 +161,47 @@
      Correlatie: Mail ↔ DNS (Jard)
      ========================= -->
 <group name="correlation,mail,sysmon,">
-  <rule id="100625" level="7" frequency="2" timeframe="30">
-    <if_matched_sid>100510</if_matched_sid>  <!-- DNS query -->
-    <if_matched_sid>100620</if_matched_sid>  <!-- Outgoing SMTP -->
+  <!-- Sysmon DNS (100510) + SMTP 25/465/587 -->
+  <rule id="100640" level="7" frequency="2" timeframe="120">
+    <if_matched_sid>100510</if_matched_sid>
+    <if_matched_sid>100620</if_matched_sid>
     <same_field>agent.id</same_field>
-    <description>Mail domain lookup + SMTP connect: $(win.eventdata.QueryName)</description>
+    <description>Mail domain lookup (Sysmon DNS) + SMTP</description>
     <group>mail,correlation,sysmon,</group>
+  </rule>
+  <rule id="100641" level="7" frequency="2" timeframe="120">
+    <if_matched_sid>100510</if_matched_sid>
+    <if_matched_sid>100621</if_matched_sid>
+    <same_field>agent.id</same_field>
+    <description>Mail domain lookup (Sysmon DNS) + SMTP</description>
+  </rule>
+  <rule id="100642" level="7" frequency="2" timeframe="120">
+    <if_matched_sid>100510</if_matched_sid>
+    <if_matched_sid>100622</if_matched_sid>
+    <same_field>agent.id</same_field>
+    <description>Mail domain lookup (Sysmon DNS) + SMTP</description>
+  </rule>
+</group>
+
+<!-- Windows DNS-Client (100540) + SMTP 25/465/587 -->
+<group name="correlation,mail,windowsdns,">
+  <rule id="100645" level="7" frequency="2" timeframe="120">
+    <if_matched_sid>100540</if_matched_sid>
+    <if_matched_sid>100620</if_matched_sid>
+    <same_field>agent.id</same_field>
+    <description>Mail domain lookup (Windows DNS) + SMTP</description>
+    <group>mail,correlation,</group>
+  </rule>
+  <rule id="100646" level="7" frequency="2" timeframe="120">
+    <if_matched_sid>100540</if_matched_sid>
+    <if_matched_sid>100621</if_matched_sid>
+    <same_field>agent.id</same_field>
+    <description>Mail domain lookup (Windows DNS) + SMTP</description>
+  </rule>
+  <rule id="100647" level="7" frequency="2" timeframe="120">
+    <if_matched_sid>100540</if_matched_sid>
+    <if_matched_sid>100622</if_matched_sid>
+    <same_field>agent.id</same_field>
+    <description>Mail domain lookup (Windows DNS) + SMTP</description>
   </rule>
 </group>
