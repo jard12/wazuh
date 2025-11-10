@@ -1,5 +1,5 @@
 <!-- =========================
-     local_rules.xml  (Jard)
+     local_rules.xml 
      ========================= -->
 
 <!-- ========== SYSmon: File events (create / stream hash / delete) ========== -->
@@ -118,7 +118,7 @@
 </group>
 
 <!-- =========================
-     Sysmon Mail Detection (Jard)
+     Sysmon Mail Detection
      ========================= -->
 <group name="sysmon,network,mail,">
 
@@ -182,4 +182,17 @@
     <group>mail,attachment,sysmon,</group>
   </rule>
 
+</group>
+
+<!-- =========================
+     Correlatie: Mail ↔ DNS (Jard)
+     ========================= -->
+<group name="correlation,mail,sysmon,">
+  <rule id="100625" level="7" frequency="2" timeframe="30">
+    <if_matched_sid>100510</if_matched_sid>  <!-- DNS query -->
+    <if_matched_sid>100620</if_matched_sid>  <!-- Outgoing SMTP -->
+    <same_field>agent.id</same_field>
+    <description>Mail domain lookup + SMTP connect: $(win.eventdata.QueryName)</description>
+    <group>mail,correlation,sysmon,</group>
+  </rule>
 </group>
