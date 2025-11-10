@@ -118,114 +118,113 @@
 </group>
 
 <!-- =========================
-     Sysmon Mail Detection (fixed)
+     Sysmon Mail Detection (final)
      ========================= -->
 <group name="sysmon,network,mail,">
 
-  <!-- Outgoing SMTP -->
-  <rule id="100620" level="5">
+  <!-- Basis: elke Sysmon NetConnect -->
+  <rule id="100600" level="3">
     <field name="win.system.providerName">Microsoft-Windows-Sysmon</field>
     <field name="win.system.eventID">3</field>
+    <description>Sysmon NetConnect (base)</description>
+    <group>network,sysmon,</group>
+  </rule>
+
+  <!-- SMTP -->
+  <rule id="100601" level="5">
+    <if_sid>100600</if_sid>
     <field name="win.eventdata.DestinationPort">25</field>
-    <description>Outgoing SMTP: $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
+    <description>Outgoing SMTP (25): $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
     <group>mail,outgoing,sysmon,</group>
   </rule>
-  <rule id="100621" level="5">
-    <if_sid>100620</if_sid>
+  <rule id="100602" level="5">
+    <if_sid>100600</if_sid>
     <field name="win.eventdata.DestinationPort">465</field>
-    <description>Outgoing SMTP (SSL): $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
+    <description>Outgoing SMTP (SSL 465): $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
+    <group>mail,outgoing,sysmon,</group>
   </rule>
-
-  <rule id="100622" level="5">
-    <if_sid>100620</if_sid>
+  <rule id="100603" level="5">
+    <if_sid>100600</if_sid>
     <field name="win.eventdata.DestinationPort">587</field>
-    <description>Outgoing SMTP (TLS): $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
+    <description>Outgoing SMTP (TLS 587): $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
+    <group>mail,outgoing,sysmon,</group>
   </rule>
 
-  <!-- IMAP/POP3 -->
-<rule id="100623" level="4">
-  <field name="win.system.providerName">Microsoft-Windows-Sysmon</field>
-  <field name="win.system.eventID">3</field>
-  <field name="win.eventdata.DestinationPort">993</field>
-  <description>Mail client (IMAP/POP3): $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
-  <group>mail,incoming,sysmon,</group>
-</rule>
-
-<rule id="100624" level="4">
-  <if_sid>100623</if_sid>
-  <field name="win.eventdata.DestinationPort">995</field>
-  <description>Incoming POP3S connection (995)</description>
-</rule>
-
-<rule id="100625" level="4">
-  <if_sid>100623</if_sid>
-  <field name="win.eventdata.DestinationPort">143</field>
-  <description>Incoming IMAP connection (143)</description>
-</rule>
-
-<rule id="100626" level="4">
-  <if_sid>100623</if_sid>
-  <field name="win.eventdata.DestinationPort">110</field>
-  <description>Incoming POP3 connection (110)</description>
-</rule>
-
-  <!-- Attachments -->
-  <rule id="100627" level="5">
-    <field name="win.system.providerName">Microsoft-Windows-Sysmon</field>
-    <field name="win.system.eventID">11</field>
-    <regex type="pcre2">\\(Downloads|Attachments|AppData\\Local\\Temp)\\.*\.(eml|msg|pdf|docx|zip)</regex>
-    <description>Mail-related file: $(win.eventdata.TargetFilename) by $(win.eventdata.Image)</description>
-    <group>mail,attachment,sysmon,</group>
+  <!-- IMAP/POP -->
+  <rule id="100604" level="4">
+    <if_sid>100600</if_sid>
+    <field name="win.eventdata.DestinationPort">993</field>
+    <description>IMAPS (993): $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
+    <group>mail,incoming,sysmon,</group>
+  </rule>
+  <rule id="100605" level="4">
+    <if_sid>100600</if_sid>
+    <field name="win.eventdata.DestinationPort">995</field>
+    <description>POP3S (995): $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
+    <group>mail,incoming,sysmon,</group>
+  </rule>
+  <rule id="100606" level="4">
+    <if_sid>100600</if_sid>
+    <field name="win.eventdata.DestinationPort">143</field>
+    <description>IMAP (143): $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
+    <group>mail,incoming,sysmon,</group>
+  </rule>
+  <rule id="100607" level="4">
+    <if_sid>100600</if_sid>
+    <field name="win.eventdata.DestinationPort">110</field>
+    <description>POP3 (110): $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
+    <group>mail,incoming,sysmon,</group>
   </rule>
 
 </group>
 
 
 <!-- =========================
-     Correlatie: Mail ↔ DNS (Jard)
+     Correlatie: Mail ↔ DNS (Sysmon DNS 100510)
      ========================= -->
 <group name="correlation,mail,sysmon,">
-  <!-- Sysmon DNS (100510) + SMTP 25/465/587 -->
-  <rule id="100640" level="7" frequency="2" timeframe="120">
-    <if_matched_sid>100510</if_matched_sid>
-    <if_matched_sid>100620</if_matched_sid>
+  <rule id="100640" level="7" frequency="2" timeframe="300">
+    <if_matched_sid>100510</if_matched_sid>  <!-- Sysmon DNS -->
+    <if_matched_sid>100601</if_matched_sid>  <!-- SMTP 25 -->
     <same_field>agent.id</same_field>
-    <description>Mail domain lookup (Sysmon DNS) + SMTP</description>
+    <description>Mail domain lookup (Sysmon DNS) + SMTP 25</description>
     <group>mail,correlation,sysmon,</group>
   </rule>
-  <rule id="100641" level="7" frequency="2" timeframe="120">
+  <rule id="100641" level="7" frequency="2" timeframe="300">
     <if_matched_sid>100510</if_matched_sid>
-    <if_matched_sid>100621</if_matched_sid>
+    <if_matched_sid>100602</if_matched_sid>  <!-- SMTP 465 -->
     <same_field>agent.id</same_field>
-    <description>Mail domain lookup (Sysmon DNS) + SMTP</description>
+    <description>Mail domain lookup (Sysmon DNS) + SMTP 465</description>
   </rule>
-  <rule id="100642" level="7" frequency="2" timeframe="120">
+  <rule id="100642" level="7" frequency="2" timeframe="300">
     <if_matched_sid>100510</if_matched_sid>
-    <if_matched_sid>100622</if_matched_sid>
+    <if_matched_sid>100603</if_matched_sid>  <!-- SMTP 587 -->
     <same_field>agent.id</same_field>
-    <description>Mail domain lookup (Sysmon DNS) + SMTP</description>
+    <description>Mail domain lookup (Sysmon DNS) + SMTP 587</description>
   </rule>
 </group>
 
-<!-- Windows DNS-Client (100540) + SMTP 25/465/587 -->
+<!-- =========================
+     Correlatie: Mail ↔ DNS (Windows DNS-Client 100540)
+     ========================= -->
 <group name="correlation,mail,windowsdns,">
-  <rule id="100645" level="7" frequency="2" timeframe="120">
-    <if_matched_sid>100540</if_matched_sid>
-    <if_matched_sid>100620</if_matched_sid>
+  <rule id="100645" level="7" frequency="2" timeframe="300">
+    <if_matched_sid>100540</if_matched_sid>  <!-- Windows DNS-Client -->
+    <if_matched_sid>100601</if_matched_sid>  <!-- SMTP 25 -->
     <same_field>agent.id</same_field>
-    <description>Mail domain lookup (Windows DNS) + SMTP</description>
+    <description>Mail domain lookup (Windows DNS) + SMTP 25</description>
     <group>mail,correlation,</group>
   </rule>
-  <rule id="100646" level="7" frequency="2" timeframe="120">
+  <rule id="100646" level="7" frequency="2" timeframe="300">
     <if_matched_sid>100540</if_matched_sid>
-    <if_matched_sid>100621</if_matched_sid>
+    <if_matched_sid>100602</if_matched_sid>  <!-- SMTP 465 -->
     <same_field>agent.id</same_field>
-    <description>Mail domain lookup (Windows DNS) + SMTP</description>
+    <description>Mail domain lookup (Windows DNS) + SMTP 465</description>
   </rule>
-  <rule id="100647" level="7" frequency="2" timeframe="120">
+  <rule id="100647" level="7" frequency="2" timeframe="300">
     <if_matched_sid>100540</if_matched_sid>
-    <if_matched_sid>100622</if_matched_sid>
+    <if_matched_sid>100603</if_matched_sid>  <!-- SMTP 587 -->
     <same_field>agent.id</same_field>
-    <description>Mail domain lookup (Windows DNS) + SMTP</description>
+    <description>Mail domain lookup (Windows DNS) + SMTP 587</description>
   </rule>
 </group>
