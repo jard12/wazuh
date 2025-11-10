@@ -1,10 +1,7 @@
-<!-- =========================
-     local_rules.xml (Jard)
-     ========================= -->
-
-<!-- ========== Sysmon: File events (create / stream hash / delete) ========== -->
-<group name="windows,sysmon,files,">
-
+<group name="local,windows,sysmon,mail,">
+  <!-- =========================
+       SYSmon: File events
+       ========================= -->
   <!-- FileCreate (ID 11) -->
   <rule id="100230" level="6">
     <field name="data.win.system.providerName">Microsoft-Windows-Sysmon</field>
@@ -45,11 +42,9 @@
     <group>file,delete,permanent,sysmon,</group>
   </rule>
 
-</group>
-
-<!-- =============== Sysmon: Process, Network & DNS ================= -->
-<group name="sysmon,windows,">
-
+  <!-- =========================
+       SYSmon: DNS / Network
+       ========================= -->
   <!-- DNS Query (ID 22) -->
   <rule id="100510" level="4">
     <field name="data.win.system.providerName">Microsoft-Windows-Sysmon</field>
@@ -62,44 +57,42 @@
   <rule id="100511" level="5">
     <field name="data.win.system.providerName">Microsoft-Windows-Sysmon</field>
     <field name="data.win.system.eventID">3</field>
-    <description>Sysmon NetConnect: $(data.win.eventdata.Image) → $(data.win.eventdata.DestinationHostname):$(data.win.eventdata.DestinationPort)</description>
+    <description>Sysmon NetConnect: $(data.win.eventdata.Image) -> $(data.win.eventdata.DestinationHostname):$(data.win.eventdata.DestinationPort)</description>
     <group>network,sysmon,</group>
   </rule>
 
-  <!-- Correlatie: DNS + NetConnect binnen 60 sec -->
+  <!-- Correlatie: DNS + NetConnect (zelfde agent, 60s) -->
   <rule id="100512" level="7" frequency="2" timeframe="60">
     <if_matched_sid>100510</if_matched_sid>
     <if_matched_sid>100511</if_matched_sid>
     <same_field>agent.id</same_field>
-    <description>Web visit: $(data.win.eventdata.Image) → $(data.win.eventdata.QueryName) ($(data.win.eventdata.DestinationIp):$(data.win.eventdata.DestinationPort))</description>
+    <description>Web visit: $(data.win.eventdata.Image) -> $(data.win.eventdata.QueryName) ($(data.win.eventdata.DestinationIp):$(data.win.eventdata.DestinationPort))</description>
     <group>correlation,web,sysmon,</group>
   </rule>
 
-</group>
-
-<!-- =============== Windows DNS-Client (native kanaal) ================= -->
-<group name="dns,windows,">
+  <!-- =========================
+       Windows DNS-Client (native)
+       ========================= -->
   <rule id="100540" level="4">
     <field name="data.win.system.providerName">Microsoft-Windows-DNS-Client</field>
     <field name="data.win.system.eventID">3008</field>
     <description>DNS query completed: $(data.win.eventdata.queryName) (status $(data.win.eventdata.queryStatus))</description>
     <group>dns,windows,</group>
   </rule>
-</group>
 
-<!-- =============== PowerShell Noise Filter ================= -->
-<group name="windows,powershell,global,">
+  <!-- =========================
+       PowerShell noise filter
+       ========================= -->
   <rule id="199959" level="0">
     <field name="data.win.system.providerName">Microsoft-Windows-PowerShell</field>
     <field name="data.win.system.channel">Microsoft-Windows-PowerShell/Operational</field>
     <regex type="pcre2">(Set-StrictMode|Out-Default|PSConsoleHostReadLine|TabExpansion2|prompt|Get-FormatData)</regex>
     <description>Noise filter: benign PowerShell host lines</description>
   </rule>
-</group>
 
-<!-- =============== Syscollector: program install/remove ================= -->
-<group name="local,syscollector,">
-  <!-- Install -->
+  <!-- =========================
+       Syscollector: program install/remove
+       ========================= -->
   <rule id="100220" level="5">
     <field name="integration">syscollector</field>
     <field name="data.type">dbsync_programs</field>
@@ -108,7 +101,6 @@
     <group>inventory,programs,install,</group>
   </rule>
 
-  <!-- Remove -->
   <rule id="100221" level="5">
     <field name="integration">syscollector</field>
     <field name="data.type">dbsync_programs</field>
@@ -116,12 +108,11 @@
     <description>Program removed: ${data.program.name} ${data.program.version}</description>
     <group>inventory,programs,remove,</group>
   </rule>
-</group>
 
-<!-- =============== Sysmon Mail Detection ================= -->
-<group name="sysmon,network,mail,">
-
-  <!-- Basisregel -->
+  <!-- =========================
+       Sysmon Mail Detection
+       ========================= -->
+  <!-- Base: elke Sysmon NetConnect -->
   <rule id="100600" level="3">
     <field name="data.win.system.providerName">Microsoft-Windows-Sysmon</field>
     <field name="data.win.system.eventID">3</field>
@@ -133,21 +124,19 @@
   <rule id="100601" level="5">
     <if_sid>100600</if_sid>
     <field name="data.win.eventdata.DestinationPort">25</field>
-    <description>Outgoing SMTP (25): $(data.win.eventdata.Image) → $(data.win.eventdata.DestinationHostname):$(data.win.eventdata.DestinationPort)</description>
+    <description>Outgoing SMTP 25: $(data.win.eventdata.Image) -> $(data.win.eventdata.DestinationHostname):$(data.win.eventdata.DestinationPort)</description>
     <group>mail,outgoing,sysmon,</group>
   </rule>
-
   <rule id="100602" level="5">
     <if_sid>100600</if_sid>
     <field name="data.win.eventdata.DestinationPort">465</field>
-    <description>Outgoing SMTP (SSL 465): $(data.win.eventdata.Image) → $(data.win.eventdata.DestinationHostname):$(data.win.eventdata.DestinationPort)</description>
+    <description>Outgoing SMTP 465: $(data.win.eventdata.Image) -> $(data.win.eventdata.DestinationHostname):$(data.win.eventdata.DestinationPort)</description>
     <group>mail,outgoing,sysmon,</group>
   </rule>
-
   <rule id="100603" level="5">
     <if_sid>100600</if_sid>
     <field name="data.win.eventdata.DestinationPort">587</field>
-    <description>Outgoing SMTP (TLS 587): $(data.win.eventdata.Image) → $(data.win.eventdata.DestinationHostname):$(data.win.eventdata.DestinationPort)</description>
+    <description>Outgoing SMTP 587: $(data.win.eventdata.Image) -> $(data.win.eventdata.DestinationHostname):$(data.win.eventdata.DestinationPort)</description>
     <group>mail,outgoing,sysmon,</group>
   </rule>
 
@@ -155,78 +144,102 @@
   <rule id="100604" level="4">
     <if_sid>100600</if_sid>
     <field name="data.win.eventdata.DestinationPort">993</field>
-    <description>IMAPS (993): $(data.win.eventdata.Image) → $(data.win.eventdata.DestinationHostname):$(data.win.eventdata.DestinationPort)</description>
+    <description>IMAPS 993: $(data.win.eventdata.Image) -> $(data.win.eventdata.DestinationHostname):$(data.win.eventdata.DestinationPort)</description>
     <group>mail,incoming,sysmon,</group>
   </rule>
-
   <rule id="100605" level="4">
     <if_sid>100600</if_sid>
     <field name="data.win.eventdata.DestinationPort">995</field>
-    <description>POP3S (995): $(data.win.eventdata.Image) → $(data.win.eventdata.DestinationHostname):$(data.win.eventdata.DestinationPort)</description>
+    <description>POP3S 995: $(data.win.eventdata.Image) -> $(data.win.eventdata.DestinationHostname):$(data.win.eventdata.DestinationPort)</description>
     <group>mail,incoming,sysmon,</group>
   </rule>
-
   <rule id="100606" level="4">
     <if_sid>100600</if_sid>
     <field name="data.win.eventdata.DestinationPort">143</field>
-    <description>IMAP (143): $(data.win.eventdata.Image) → $(data.win.eventdata.DestinationHostname):$(data.win.eventdata.DestinationPort)</description>
+    <description>IMAP 143: $(data.win.eventdata.Image) -> $(data.win.eventdata.DestinationHostname):$(data.win.eventdata.DestinationPort)</description>
     <group>mail,incoming,sysmon,</group>
   </rule>
-
   <rule id="100607" level="4">
     <if_sid>100600</if_sid>
     <field name="data.win.eventdata.DestinationPort">110</field>
-    <description>POP3 (110): $(data.win.eventdata.Image) → $(data.win.eventdata.DestinationHostname):$(data.win.eventdata.DestinationPort)</description>
+    <description>POP3 110: $(data.win.eventdata.Image) -> $(data.win.eventdata.DestinationHostname):$(data.win.eventdata.DestinationPort)</description>
     <group>mail,incoming,sysmon,</group>
   </rule>
 
-</group>
-
-<!-- =============== Correlatie: Mail ↔ DNS ================= -->
-<group name="correlation,mail,sysmon,">
+  <!-- Correlatie: Sysmon DNS + SMTP -->
   <rule id="100640" level="7" frequency="2" timeframe="300">
     <if_matched_sid>100510</if_matched_sid>
     <if_matched_sid>100601</if_matched_sid>
     <same_field>agent.id</same_field>
-    <description>Mail domain lookup (Sysmon DNS) + SMTP 25</description>
+    <description>Mail correlation (Sysmon DNS + SMTP 25)</description>
     <group>mail,correlation,sysmon,</group>
   </rule>
-
   <rule id="100641" level="7" frequency="2" timeframe="300">
     <if_matched_sid>100510</if_matched_sid>
     <if_matched_sid>100602</if_matched_sid>
     <same_field>agent.id</same_field>
-    <description>Mail domain lookup (Sysmon DNS) + SMTP 465</description>
+    <description>Mail correlation (Sysmon DNS + SMTP 465)</description>
   </rule>
-
   <rule id="100642" level="7" frequency="2" timeframe="300">
     <if_matched_sid>100510</if_matched_sid>
     <if_matched_sid>100603</if_matched_sid>
     <same_field>agent.id</same_field>
-    <description>Mail domain lookup (Sysmon DNS) + SMTP 587</description>
+    <description>Mail correlation (Sysmon DNS + SMTP 587)</description>
   </rule>
-</group>
 
-<group name="correlation,mail,windowsdns,">
+  <!-- Correlatie: Windows DNS-Client + SMTP -->
   <rule id="100645" level="7" frequency="2" timeframe="300">
     <if_matched_sid>100540</if_matched_sid>
     <if_matched_sid>100601</if_matched_sid>
     <same_field>agent.id</same_field>
-    <description>Mail domain lookup (Windows DNS) + SMTP 25</description>
+    <description>Mail correlation (Windows DNS + SMTP 25)</description>
     <group>mail,correlation,windows,</group>
   </rule>
-
   <rule id="100646" level="7" frequency="2" timeframe="300">
     <if_matched_sid>100540</if_matched_sid>
     <if_matched_sid>100602</if_matched_sid>
     <same_field>agent.id</same_field>
-    <description>Mail domain lookup (Windows DNS) + SMTP 465</description>
+    <description>Mail correlation (Windows DNS + SMTP 465)</description>
   </rule>
-
   <rule id="100647" level="7" frequency="2" timeframe="300">
     <if_matched_sid>100540</if_matched_sid>
     <if_matched_sid>100603</if_matched_sid>
     <same_field>agent.id</same_field>
-    <description>Mail domain lookup (Windows DNS) + SMTP 587</description>
+    <description>Mail correlation (Windows DNS + SMTP 587)</description>
+  </rule>
+
+  <!-- =========================
+       Security: "DA loggen" (groep membership)
+       ========================= -->
+  <!-- Lid toegevoegd aan (Domain) Admins/Administrators -->
+  <rule id="100700" level="10">
+    <field name="data.win.system.channel">Security</field>
+    <field name="data.win.system.eventID">4728</field> <!-- global security group add -->
+    <regex type="pcre2">(Domain Admins|Administrators)</regex>
+    <description>Member ADDED to admin group: $(data.win.eventdata.MemberName) -> $(data.win.eventdata.TargetUserName)</description>
+    <group>security,groupchange,admins,</group>
+  </rule>
+  <rule id="100701" level="10">
+    <field name="data.win.system.channel">Security</field>
+    <field name="data.win.system.eventID">4732</field> <!-- local security group add -->
+    <regex type="pcre2">(Domain Admins|Administrators)</regex>
+    <description>Member ADDED to local admin group: $(data.win.eventdata.MemberName) -> $(data.win.eventdata.TargetUserName)</description>
+    <group>security,groupchange,admins,</group>
+  </rule>
+
+  <!-- Lid verwijderd uit (Domain) Admins/Administrators -->
+  <rule id="100702" level="8">
+    <field name="data.win.system.channel">Security</field>
+    <field name="data.win.system.eventID">4729</field>
+    <regex type="pcre2">(Domain Admins|Administrators)</regex>
+    <description>Member REMOVED from admin group: $(data.win.eventdata.MemberName) -> $(data.win.eventdata.TargetUserName)</description>
+    <group>security,groupchange,admins,</group>
+  </rule>
+  <rule id="100703" level="8">
+    <field name="data.win.system.channel">Security</field>
+    <field name="data.win.system.eventID">4733</field>
+    <regex type="pcre2">(Domain Admins|Administrators)</regex>
+    <description>Member REMOVED from local admin group: $(data.win.eventdata.MemberName) -> $(data.win.eventdata.TargetUserName)</description>
+    <group>security,groupchange,admins,</group>
   </rule>
 </group>
