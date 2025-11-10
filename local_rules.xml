@@ -143,16 +143,31 @@
   </rule>
 
   <!-- IMAP/POP3 -->
-  <rule id="100623" level="4">
-    <field name="win.system.providerName">Microsoft-Windows-Sysmon</field>
-    <field name="win.system.eventID">3</field>
-    <field name="win.eventdata.DestinationPort">993</field>
-    <description>Mail client (IMAP/POP3): $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
-    <group>mail,incoming,sysmon,</group>
-  </rule>
-  <rule id="100624" level="4"><if_sid>100623</if_sid><field name="win.eventdata.DestinationPort">995</field></rule>
-  <rule id="100625" level="4"><if_sid>100623</if_sid><field name="win.eventdata.DestinationPort">143</field></rule>
-  <rule id="100626" level="4"><if_sid>100623</if_sid><field name="win.eventdata.DestinationPort">110</field></rule>
+<rule id="100623" level="4">
+  <field name="win.system.providerName">Microsoft-Windows-Sysmon</field>
+  <field name="win.system.eventID">3</field>
+  <field name="win.eventdata.DestinationPort">993</field>
+  <description>Mail client (IMAP/POP3): $(win.eventdata.Image) → $(win.eventdata.DestinationHostname):$(win.eventdata.DestinationPort)</description>
+  <group>mail,incoming,sysmon,</group>
+</rule>
+
+<rule id="100624" level="4">
+  <if_sid>100623</if_sid>
+  <field name="win.eventdata.DestinationPort">995</field>
+  <description>Incoming POP3S connection (995)</description>
+</rule>
+
+<rule id="100625" level="4">
+  <if_sid>100623</if_sid>
+  <field name="win.eventdata.DestinationPort">143</field>
+  <description>Incoming IMAP connection (143)</description>
+</rule>
+
+<rule id="100626" level="4">
+  <if_sid>100623</if_sid>
+  <field name="win.eventdata.DestinationPort">110</field>
+  <description>Incoming POP3 connection (110)</description>
+</rule>
 
   <!-- Attachments -->
   <rule id="100627" level="5">
