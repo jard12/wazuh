@@ -40,8 +40,8 @@
     <!-- ========= FILE CREATE ========= -->
     <FileCreate onmatch="include">
       <!-- Gebruikerslocaties + installers/scripts -->
-      <TargetFilename condition="contains">\Users\</TargetFilename>
       <TargetFilename condition="contains">\Downloads\</TargetFilename>
+<!--      <TargetFilename condition="contains">\Users\</TargetFilename>
       <TargetFilename condition="contains">\Desktop\</TargetFilename>
       <TargetFilename condition="contains">\Documents\</TargetFilename>
       <TargetFilename condition="contains">\Program Files\</TargetFilename>
@@ -55,7 +55,7 @@
       <TargetFilename condition="end with">.jpg</TargetFilename>
       <TargetFilename condition="end with">.png</TargetFilename>
       <TargetFilename condition="end with">.webp</TargetFilename>
-      <TargetFilename condition="end with">.pdf</TargetFilename>
+      <TargetFilename condition="end with">.pdf</TargetFilename> -->
     </FileCreate>
 
     <!-- ========= FILE DELETE ========= -->
