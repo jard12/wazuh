@@ -45,7 +45,7 @@
       <TargetFilename condition="contains">\Desktop\</TargetFilename>
       <TargetFilename condition="contains">\Documents\</TargetFilename>
       <TargetFilename condition="contains">\Program Files\</TargetFilename>
-      <TargetFilename condition="contains">\Program Files (x86)\</TargetFilename>
+      <TargetFilename condition="contains">\Program Files (x86)\</TargetFilename> -->
       <TargetFilename condition="end with">.exe</TargetFilename>
       <TargetFilename condition="end with">.msi</TargetFilename>
       <TargetFilename condition="end with">.zip</TargetFilename>
@@ -55,7 +55,7 @@
       <TargetFilename condition="end with">.jpg</TargetFilename>
       <TargetFilename condition="end with">.png</TargetFilename>
       <TargetFilename condition="end with">.webp</TargetFilename>
-      <TargetFilename condition="end with">.pdf</TargetFilename> -->
+      <TargetFilename condition="end with">.pdf</TargetFilename>
     </FileCreate>
 
     <!-- ========= FILE DELETE ========= -->
